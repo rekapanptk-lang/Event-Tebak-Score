@@ -93,7 +93,7 @@
       display: none; width: 100%;
       flex-direction: column; align-items: center;
     }
-    #loginSection { flex: 1; justify-content: center; gap: 32px; padding-bottom: 0; }
+    #loginSection { flex: 1; justify-content: flex-start; padding-bottom: 0; }
     #formSection  { flex: 1; justify-content: flex-start; }
 
     .form-spacer-top    { flex: 1; min-height: 8px; }
@@ -278,6 +278,7 @@
     <!-- LOGIN SECTION -->
     <div id="loginSection">
       <img src="https://dash.takenupload.org/GIf-SMBT-NEW-340" alt="Sumbutogel" class="logo-gif">
+      <div style="flex:1"></div>
       <button class="google-btn" onclick="loginGoogle()">
         <svg width="20" height="20" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -287,6 +288,7 @@
         </svg>
         Lanjutkan dengan Google
       </button>
+      <div style="flex:1"></div>
     </div>
 
     <!-- FORM SECTION -->
@@ -324,7 +326,7 @@
 <script>
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxLRqg9QKT0YwMo0wsVpv7o0jiaDpedo8VHH-3RpA4xaVJNbuoNBHqPIqBiJGNhK-tFCQ/exec';
   const CLIENT_ID       = '69593145654-5c2n90v8f3cetmtjl91u7ua00rg7rub2.apps.googleusercontent.com';
-  const BASE_URL = 'https://pialadunia-sumbutogel.vercel.app';
+  const BASE_URL        = 'https://pildun-form.vercel.app';
 
   let matches     = [];
   let currentUser = null;
@@ -370,7 +372,7 @@
         <div class="match-header">
           <div class="match-checkbox"><span class="match-checkbox-tick">✓</span></div>
           <div class="match-title">${m.pertandingan}</div>
-          <div class="match-time">${m.tanggal ? m.tanggal + ' | ' + m.jam : m.jam || ''}</div>
+          <div class="match-time">${m.tanggal ? m.tanggal + ' ' + m.jam : m.jam || ''}</div>
         </div>
         <div class="match-preview" id="preview-${i}">Tebakan: 0 - 0</div>
         <div class="score-section" onclick="event.stopPropagation()">
