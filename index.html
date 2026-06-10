@@ -255,7 +255,7 @@
     <!-- LOGIN SECTION -->
     <div id="loginSection">
       <img src="https://dash.takenupload.org/GIf-SMBT-NEW-340" alt="Sumbutogel" class="logo-gif">
-      <span class="winner-link" onclick="openWinner()">🏆 Pemenang Hari Sebelumnya</span>
+      <span class="winner-link" onclick="openWinner()">🏆 Klik Untuk Melihat Daftar Pemenang</span>
       <div style="flex:1"></div>
       <button class="google-btn" onclick="loginGoogle()">
         <svg width="20" height="20" viewBox="0 0 24 24">
@@ -272,7 +272,7 @@
     <!-- FORM SECTION -->
     <div id="formSection">
       <img src="https://dash.takenupload.org/GIf-SMBT-NEW-340" alt="Sumbutogel" class="logo-gif">
-      <span class="winner-link" onclick="openWinner()">🏆 Pemenang Hari Sebelumnya</span>
+      <span class="winner-link" onclick="openWinner()">🏆 Klik Untuk Melihat Daftar Pemenang</span>
 
       <div class="form-spacer-top"></div>
 
@@ -556,7 +556,7 @@
   function renderWinners(winners) {
     const list = document.getElementById('winnerList');
     if (!winners.length) {
-      list.innerHTML = '<div class="winner-empty">Belum ada pemenang bray 🏆</div>'; return;
+      list.innerHTML = '<div class="winner-empty">Belum ada pemenang<br><br>Jadilah Pemenang Pertama kami 🏆</div>'; return;
     }
     const medals = ['🥇','🥈','🥉'];
     list.innerHTML = winners.map((w, i) => `
