@@ -49,17 +49,17 @@
       .card-content { height: 85vh; max-height: 800px; }
     }
 
-    /* GIF atas */
     .logo-gif {
       width: 325px; max-width: 100%; height: auto;
       flex-shrink: 0; display: block;
+      animation: floatGlow 3s ease-in-out infinite;
+    }
+    @keyframes floatGlow {
+      0%,100% { transform: translateY(0px);   filter: drop-shadow(0 0 8px rgba(255,220,0,0.4)); }
+      50%      { transform: translateY(-10px); filter: drop-shadow(0 0 20px rgba(255,220,0,0.8)); }
     }
 
-    /* GIF tebak score */
-    .tebak-gif {
-      height: 130px; width: auto; display: block;
-      margin: 8px auto; flex-shrink: 0;
-    }
+    /* tebak-gif removed */
 
     /* Center content */
     .center-content {
@@ -150,11 +150,8 @@
 
   <div class="card-content fade-in">
 
-    <!-- GIF Sumbutogel atas -->
-    <img src="https://dash.takenupload.org/GIf-SMBT-NEW-340" alt="Sumbutogel" class="logo-gif">
-
-    <!-- GIF Tebak Score -->
-    <img src="https://dash.takenupload.org/TOMBOL-TEBAK_SCORE-SUMBUTOGEL" alt="Tebak Score" class="tebak-gif">
+    <!-- Logo atas -->
+    <img src="logo.webp" alt="Sumbutogel" class="logo-gif">
 
     <!-- Center content -->
     <div class="center-content">
