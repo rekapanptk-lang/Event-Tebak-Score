@@ -595,11 +595,7 @@
     });
     const target = document.getElementById(id);
     if (target) { target.style.display = 'flex'; target.classList.add('fade-in'); }
-    // Auto start musik saat masuk form section
-    if (id === 'formSection') startMusic();
-    else {
-      document.getElementById('musicControls').style.display = isPlaying ? 'block' : 'none';
-    }
+    document.getElementById('musicControls').style.display = isPlaying ? 'block' : 'none';
   }
 
   // ── SHOW FORM ──
@@ -662,6 +658,7 @@
 
   function closeWinner() {
     document.getElementById('winnerOverlay').classList.remove('show');
+    if (!isPlaying) startMusic();
   }
   function closeWinnerOutside(e) {
     if (e.target === document.getElementById('winnerOverlay')) closeWinner();
@@ -669,14 +666,6 @@
 
   // ── INIT ──
   window.onload = async function() {
-    // Unlock audio context untuk bypass browser autoplay policy
-    music.volume = 0;
-    music.play().then(() => {
-      music.pause();
-      music.currentTime = 0;
-      music.volume = 0.2;
-    }).catch(() => {});
-
     await loadConfig();
 
     const params = new URLSearchParams(window.location.search);
