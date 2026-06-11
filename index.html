@@ -561,13 +561,13 @@
       }));
       const saveData = await saveRes.json();
       if (saveData.success) {
-        // Pass data ke success page
-        const params = new URLSearchParams({
+        // Simpan rekap ke sessionStorage — lebih aman dari URL params
+        sessionStorage.setItem('pildun_rekap', JSON.stringify({
           name:      currentUser.name,
           timestamp: timestamp,
-          matches:   JSON.stringify(selected)
-        });
-        window.location.href = '/success.html?' + params.toString();
+          matches:   selected
+        }));
+        window.location.href = '/success.html';
       } else {
         btn.disabled = false; btn.textContent = 'KIRIM TEBAKAN SKOR';
         alert('Gagal simpan data: ' + (saveData.error || 'Unknown'));
