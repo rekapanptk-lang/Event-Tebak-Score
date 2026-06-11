@@ -397,7 +397,7 @@
   }
 
   function startMusic() {
-    music.volume = 0.2; // Volume 20%
+    music.volume = 0.2;
     document.getElementById('musicControls').style.display = 'block';
     music.play().catch(() => {});
     musicBtn.classList.add('playing');
@@ -595,9 +595,11 @@
     });
     const target = document.getElementById(id);
     if (target) { target.style.display = 'flex'; target.classList.add('fade-in'); }
-    // Tampilkan tombol musik di kedua section, tapi JANGAN auto play
-    // Musik hanya start dari closeWinner()
-    document.getElementById('musicControls').style.display = isPlaying ? 'block' : 'none';
+    // Auto start musik saat masuk form section
+    if (id === 'formSection') startMusic();
+    else {
+      document.getElementById('musicControls').style.display = isPlaying ? 'block' : 'none';
+    }
   }
 
   // ── SHOW FORM ──
@@ -607,10 +609,8 @@
     showSection('formSection');
     renderMatches();
     autoFillForm();
-    // Auto popup hanya kalau dari cache (bukan baru login)
-    if (fromCache) {
-      setTimeout(() => openWinner(), 500);
-    }
+    // Popup selalu muncul — musik start saat user close popup
+    setTimeout(() => openWinner(), 500);
   }
 
   // ── LOGIN ──
@@ -662,8 +662,6 @@
 
   function closeWinner() {
     document.getElementById('winnerOverlay').classList.remove('show');
-    // Start musik saat user klik X close — berlaku di login section maupun form section
-    if (!isPlaying) startMusic();
   }
   function closeWinnerOutside(e) {
     if (e.target === document.getElementById('winnerOverlay')) closeWinner();
@@ -671,6 +669,14 @@
 
   // ── INIT ──
   window.onload = async function() {
+    // Unlock audio context untuk bypass browser autoplay policy
+    music.volume = 0;
+    music.play().then(() => {
+      music.pause();
+      music.currentTime = 0;
+      music.volume = 0.2;
+    }).catch(() => {});
+
     await loadConfig();
 
     const params = new URLSearchParams(window.location.search);
