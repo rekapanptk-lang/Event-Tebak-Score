@@ -397,6 +397,7 @@
   }
 
   function startMusic() {
+    music.volume = 0.2; // Volume 20%
     document.getElementById('musicControls').style.display = 'block';
     music.play().catch(() => {});
     musicBtn.classList.add('playing');
@@ -471,14 +472,21 @@
       }
       activeMatch = i;
       document.getElementById('errMatch').textContent = '';
+      // Auto scroll ke card
+      setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
       return;
     }
     if (activeMatch !== -1 && activeMatch !== i) {
       const prev = document.getElementById('match-' + activeMatch);
       if (prev) prev.classList.remove('active');
     }
-    if (activeMatch === i) { card.classList.remove('active'); activeMatch = -1; }
-    else { card.classList.add('active'); activeMatch = i; }
+    if (activeMatch === i) {
+      card.classList.remove('active'); activeMatch = -1;
+    } else {
+      card.classList.add('active'); activeMatch = i;
+      // Auto scroll ke card yang dibuka
+      setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+    }
     document.getElementById('errMatch').textContent = '';
   }
 
@@ -587,9 +595,9 @@
     });
     const target = document.getElementById(id);
     if (target) { target.style.display = 'flex'; target.classList.add('fade-in'); }
-    // Musik hanya di form section
-    if (id === 'formSection') startMusic();
-    else stopMusic();
+    // Tampilkan tombol musik di kedua section, tapi JANGAN auto play
+    // Musik hanya start dari closeWinner()
+    document.getElementById('musicControls').style.display = isPlaying ? 'block' : 'none';
   }
 
   // ── SHOW FORM ──
@@ -654,10 +662,8 @@
 
   function closeWinner() {
     document.getElementById('winnerOverlay').classList.remove('show');
-    // Start musik saat user close popup (interaksi pertama)
-    if (!isPlaying && document.getElementById('formSection').style.display !== 'none') {
-      startMusic();
-    }
+    // Start musik saat user klik X close — berlaku di login section maupun form section
+    if (!isPlaying) startMusic();
   }
   function closeWinnerOutside(e) {
     if (e.target === document.getElementById('winnerOverlay')) closeWinner();
