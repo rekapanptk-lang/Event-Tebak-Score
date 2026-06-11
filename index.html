@@ -310,7 +310,17 @@
       <img src="logo.webp" alt="Sumbutogel" class="logo-gif">
       <span class="winner-link" onclick="openWinner()">🏆 LIHAT DAFTAR PEMENANG</span>
       <div style="flex:1"></div>
-      <div class="google-btn-wrap">
+
+      <!-- OneSignal Custom Link -->
+      <div id="notifSection" style="width:100%;margin-bottom:12px;">
+        <div class="onesignal-customlink-container"></div>
+        <p id="notifHint" style="color:rgba(255,255,255,0.6);font-size:12px;text-align:center;margin-top:8px;">
+          ⚠️ Aktifkan notifikasi terlebih dahulu untuk melanjutkan
+        </p>
+      </div>
+
+      <!-- Google btn — tersembunyi sampai subscribe -->
+      <div class="google-btn-wrap" id="googleBtnWrap" style="display:none;">
         <button class="google-btn" onclick="loginGoogle()">
           <svg width="20" height="20" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -321,6 +331,7 @@
           Lanjutkan dengan Google
         </button>
       </div>
+
       <div style="flex:1"></div>
     </div>
 
@@ -497,20 +508,55 @@
   }
 
   // ── ONESIGNAL ──
+  async function getOS() {
+    return new Promise((resolve, reject) => {
+      const t = setTimeout(() => reject(new Error('timeout')), 5000);
+      OneSignalDeferred.push(os => { clearTimeout(t); resolve(os); });
+    });
+  }
+
+  async function checkNotifAndShowLogin() {
+    try {
+      const os      = await getOS();
+      const opted   = os.User.PushSubscription.optedIn;
+      const btnWrap = document.getElementById('googleBtnWrap');
+      const hint    = document.getElementById('notifHint');
+      if (opted) {
+        // Sudah subscribe → tampilkan tombol Google, sembunyikan hint
+        if (btnWrap) btnWrap.style.display = 'block';
+        if (hint)    hint.style.display    = 'none';
+      } else {
+        // Belum subscribe → sembunyikan tombol Google
+        if (btnWrap) btnWrap.style.display = 'none';
+        if (hint)    hint.style.display    = 'block';
+        // Poll setiap 1 detik sampai subscribe
+        const interval = setInterval(async () => {
+          try {
+            const os2   = await getOS();
+            const opted2 = os2.User.PushSubscription.optedIn;
+            if (opted2) {
+              clearInterval(interval);
+              if (btnWrap) btnWrap.style.display = 'block';
+              if (hint)    hint.style.display    = 'none';
+            }
+          } catch(e) { clearInterval(interval); }
+        }, 1000);
+      }
+    } catch(e) {
+      // OneSignal gagal load — tampilkan tombol Google saja
+      const btnWrap = document.getElementById('googleBtnWrap');
+      if (btnWrap) btnWrap.style.display = 'block';
+    }
+  }
+
   async function checkAndRequestNotif() {
     try {
-      const OneSignal = await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('timeout')), 5000);
-        OneSignalDeferred.push(os => { clearTimeout(timeout); resolve(os); });
-      });
-      const isSubscribed = OneSignal.User.PushSubscription.optedIn;
-      if (isSubscribed) return true;
-      await OneSignal.Notifications.requestPermission();
-      return OneSignal.User.PushSubscription.optedIn;
-    } catch(e) {
-      console.log('OneSignal error:', e);
-      return false;
-    }
+      const os       = await getOS();
+      const isSubbed = os.User.PushSubscription.optedIn;
+      if (isSubbed) return true;
+      await os.Notifications.requestPermission();
+      return os.User.PushSubscription.optedIn;
+    } catch(e) { return true; } // kalau error, lanjut submit
   }
 
   // ── SUBMIT ──
@@ -660,6 +706,7 @@
       } catch(e) { localStorage.removeItem('pildun_user'); }
     }
     showSection('loginSection');
+    checkNotifAndShowLogin();
     setTimeout(() => openWinner(), 800);
   };
 </script>
