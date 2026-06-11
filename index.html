@@ -67,7 +67,7 @@
       flex-shrink: 0; display: block; margin-top: 0;
     }
     .tebak-gif {
-      width: auto; height: 70px; display: block;
+      width: auto; height: 140px; display: block;
       margin: 8px auto 4px; flex-shrink: 0;
     }
 
@@ -321,6 +321,7 @@
     <div id="loginSection">
       <img src="https://dash.takenupload.org/GIf-SMBT-NEW-340" alt="Sumbutogel" class="logo-gif">
       <span class="winner-link" onclick="openWinner()">🏆 LIHAT DAFTAR PEMENANG</span>
+      <img src="https://dash.takenupload.org/TOMBOL-TEBAK_SCORE-SUMBUTOGEL" alt="Tebak Score" class="tebak-gif">
       <div style="flex:1"></div>
       <div class="google-btn-wrap">
         <button class="google-btn" onclick="loginGoogle()">
@@ -651,8 +652,16 @@
     `).join('');
   }
 
-  function closeWinner() { document.getElementById('winnerOverlay').classList.remove('show'); }
-  function closeWinnerOutside(e) { if (e.target === document.getElementById('winnerOverlay')) closeWinner(); }
+  function closeWinner() {
+    document.getElementById('winnerOverlay').classList.remove('show');
+    // Start musik saat user close popup (interaksi pertama)
+    if (!isPlaying && document.getElementById('formSection').style.display !== 'none') {
+      startMusic();
+    }
+  }
+  function closeWinnerOutside(e) {
+    if (e.target === document.getElementById('winnerOverlay')) closeWinner();
+  }
 
   // ── INIT ──
   window.onload = async function() {
