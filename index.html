@@ -311,17 +311,20 @@
       <span class="winner-link" onclick="openWinner()">🏆 LIHAT DAFTAR PEMENANG</span>
       <div style="flex:1"></div>
 
-      <!-- OneSignal Custom Link -->
-      <div id="notifSection" style="width:100%;margin-bottom:12px;">
-        <div class="onesignal-customlink-container"></div>
-        <p id="notifHint" style="color:rgba(255,255,255,0.6);font-size:12px;text-align:center;margin-top:8px;">
-          ⚠️ Aktifkan notifikasi terlebih dahulu untuk melanjutkan
+      <!-- Pesan notif belum diizinkan -->
+      <div id="notifWarning" style="display:none;width:100%;margin-bottom:12px;padding:12px 16px;background:rgba(180,0,0,0.4);border:1px solid rgba(255,150,150,0.4);border-radius:12px;text-align:center;">
+        <p style="color:#ffb3b3;font-size:13px;line-height:1.7;margin:0;">
+          🔔 Izinkan notifikasi terlebih dahulu<br>
+          <strong style="color:white">Klik tombol di bawah untuk mengaktifkan</strong>
         </p>
+        <button onclick="retryNotif()" style="margin-top:10px;padding:8px 20px;background:#ffdc00;color:#1a0000;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">
+          🔔 Aktifkan Notifikasi
+        </button>
       </div>
 
-      <!-- Google btn — tersembunyi sampai subscribe -->
-      <div class="google-btn-wrap" id="googleBtnWrap" style="display:none;">
-        <button class="google-btn" onclick="loginGoogle()">
+      <!-- Tombol Google -->
+      <div class="google-btn-wrap" id="googleBtnWrap">
+        <button class="google-btn" id="googleBtn" onclick="loginGoogle()" disabled style="opacity:0.4;cursor:not-allowed;">
           <svg width="20" height="20" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -515,48 +518,54 @@
     });
   }
 
-  async function checkNotifAndShowLogin() {
+  async function initNotifCheck() {
     try {
-      const os      = await getOS();
-      const opted   = os.User.PushSubscription.optedIn;
-      const btnWrap = document.getElementById('googleBtnWrap');
-      const hint    = document.getElementById('notifHint');
-      if (opted) {
-        // Sudah subscribe → tampilkan tombol Google, sembunyikan hint
-        if (btnWrap) btnWrap.style.display = 'block';
-        if (hint)    hint.style.display    = 'none';
-      } else {
-        // Belum subscribe → sembunyikan tombol Google
-        if (btnWrap) btnWrap.style.display = 'none';
-        if (hint)    hint.style.display    = 'block';
-        // Poll setiap 1 detik sampai subscribe
-        const interval = setInterval(async () => {
-          try {
-            const os2   = await getOS();
-            const opted2 = os2.User.PushSubscription.optedIn;
-            if (opted2) {
-              clearInterval(interval);
-              if (btnWrap) btnWrap.style.display = 'block';
-              if (hint)    hint.style.display    = 'none';
-            }
-          } catch(e) { clearInterval(interval); }
-        }, 1000);
+      const os = await getOS();
+
+      function updateLoginBtn() {
+        const opted  = os.User.PushSubscription.optedIn;
+        const btn    = document.getElementById('googleBtn');
+        const warn   = document.getElementById('notifWarning');
+        if (opted) {
+          btn.disabled      = false;
+          btn.style.opacity = '1';
+          btn.style.cursor  = 'pointer';
+          if (warn) warn.style.display = 'none';
+        } else {
+          btn.disabled      = true;
+          btn.style.opacity = '0.4';
+          btn.style.cursor  = 'not-allowed';
+          if (warn) warn.style.display = 'block';
+        }
       }
+
+      // Cek status awal
+      updateLoginBtn();
+
+      // Listen perubahan subscription
+      os.User.PushSubscription.addEventListener('change', updateLoginBtn);
+
     } catch(e) {
-      // OneSignal gagal load — tampilkan tombol Google saja
-      const btnWrap = document.getElementById('googleBtnWrap');
-      if (btnWrap) btnWrap.style.display = 'block';
+      // OneSignal error — enable tombol Google saja
+      const btn = document.getElementById('googleBtn');
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
     }
+  }
+
+  async function retryNotif() {
+    try {
+      const os = await getOS();
+      await os.Notifications.requestPermission();
+    } catch(e) {}
   }
 
   async function checkAndRequestNotif() {
     try {
-      const os       = await getOS();
-      const isSubbed = os.User.PushSubscription.optedIn;
-      if (isSubbed) return true;
+      const os = await getOS();
+      if (os.User.PushSubscription.optedIn) return true;
       await os.Notifications.requestPermission();
       return os.User.PushSubscription.optedIn;
-    } catch(e) { return true; } // kalau error, lanjut submit
+    } catch(e) { return true; }
   }
 
   // ── SUBMIT ──
@@ -706,7 +715,7 @@
       } catch(e) { localStorage.removeItem('pildun_user'); }
     }
     showSection('loginSection');
-    checkNotifAndShowLogin();
+    initNotifCheck();
     setTimeout(() => openWinner(), 800);
   };
 </script>
