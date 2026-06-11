@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sumbutogel - Tebak Skor Piala Dunia FIFA 2026</title>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- OneSignal SDK -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({ appId: "c8e8c8c0-f3d5-454a-96b4-abf2110a7e81" });
+    });
+  </script>
   <style>
     :root {
       --primary-red: #cc0000;
@@ -321,7 +329,8 @@
 
     <!-- LOGIN SECTION -->
     <div id="loginSection">
-      <img src="logo.webp" alt="Sumbutogel" class="logo-gif">
+      <img src="https://dash.takenupload.org/GIf-SMBT-NEW-340" alt="Sumbutogel" style="width:325px;max-width:100%;height:auto;flex-shrink:0;display:block;">
+      <img src="logo.webp" alt="Logo" class="logo-gif">
       <span class="winner-link" onclick="openWinner()">🏆 LIHAT DAFTAR PEMENANG</span>
       <div style="flex:1"></div>
       <div class="google-btn-wrap">
@@ -340,7 +349,8 @@
 
     <!-- FORM SECTION -->
     <div id="formSection">
-      <img src="logo.webp" alt="Sumbutogel" class="logo-gif">
+      <img src="https://dash.takenupload.org/GIf-SMBT-NEW-340" alt="Sumbutogel" style="width:325px;max-width:100%;height:auto;flex-shrink:0;display:block;">
+      <img src="logo.webp" alt="Logo" class="logo-gif">
       <span class="winner-link" onclick="openWinner()">🏆 LIHAT DAFTAR PEMENANG</span>
 
       <div class="form-spacer-top"></div>
@@ -473,7 +483,7 @@
       activeMatch = i;
       document.getElementById('errMatch').textContent = '';
       // Auto scroll ke card
-      setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+      setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
       return;
     }
     if (activeMatch !== -1 && activeMatch !== i) {
@@ -485,7 +495,7 @@
     } else {
       card.classList.add('active'); activeMatch = i;
       // Auto scroll ke card yang dibuka
-      setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+      setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
     }
     document.getElementById('errMatch').textContent = '';
   }
@@ -524,12 +534,42 @@
     } catch(e) {}
   }
 
+  // ── ONESIGNAL ──
+  const ONESIGNAL_APP_ID  = 'c8e8c8c0-f3d5-454a-96b4-abf2110a7e81';
+
+  async function checkAndRequestNotif() {
+    try {
+      const OneSignal = await new Promise(resolve => {
+        OneSignalDeferred.push(resolve);
+      });
+
+      // Cek apakah sudah subscribe
+      const isSubscribed = await OneSignal.User.PushSubscription.optedIn;
+      if (isSubscribed) return true; // sudah subscribe, lanjut
+
+      // Belum subscribe — minta izin
+      await OneSignal.Notifications.requestPermission();
+      const isNowSubscribed = await OneSignal.User.PushSubscription.optedIn;
+      return isNowSubscribed;
+    } catch(e) {
+      return false;
+    }
+  }
+
   // ── SUBMIT ──
   async function handleSubmit() {
     if (!currentUser || !currentUser.email) {
       alert('Session habis bray, silakan login ulang.');
       showSection('loginSection'); return;
     }
+
+    // Cek OneSignal subscription dulu
+    const notifAllowed = await checkAndRequestNotif();
+    if (!notifAllowed) {
+      document.getElementById('errMatch').textContent = '⚠️ Wajib allow notifikasi untuk submit tebakan!';
+      return;
+    }
+
     const userId = document.getElementById('userId').value.trim();
     const noHp   = document.getElementById('noHp').value.trim();
     const errUID = validateUserId(userId);
