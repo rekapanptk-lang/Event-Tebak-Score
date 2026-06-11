@@ -65,11 +65,13 @@
     .logo-gif {
       width: 325px; max-width: 100%; height: auto;
       flex-shrink: 0; display: block; margin-top: 0;
+      animation: floatGlow 3s ease-in-out infinite;
     }
-    .tebak-gif {
-      width: auto; height: 140px; display: block;
-      margin: 8px auto 4px; flex-shrink: 0;
+    @keyframes floatGlow {
+      0%,100% { transform: translateY(0px);   filter: drop-shadow(0 0 8px rgba(255,220,0,0.4)); }
+      50%      { transform: translateY(-10px); filter: drop-shadow(0 0 20px rgba(255,220,0,0.8)); }
     }
+    /* tebak-gif removed */
 
     /* ── SECTIONS ── */
     #loginSection, #formSection { display: none; width: 100%; flex-direction: column; align-items: center; }
@@ -319,9 +321,8 @@
 
     <!-- LOGIN SECTION -->
     <div id="loginSection">
-      <img src="https://dash.takenupload.org/GIf-SMBT-NEW-340" alt="Sumbutogel" class="logo-gif">
+      <img src="logo.webp" alt="Sumbutogel" class="logo-gif">
       <span class="winner-link" onclick="openWinner()">🏆 LIHAT DAFTAR PEMENANG</span>
-      <img src="https://dash.takenupload.org/TOMBOL-TEBAK_SCORE-SUMBUTOGEL" alt="Tebak Score" class="tebak-gif">
       <div style="flex:1"></div>
       <div class="google-btn-wrap">
         <button class="google-btn" onclick="loginGoogle()">
@@ -339,9 +340,8 @@
 
     <!-- FORM SECTION -->
     <div id="formSection">
-      <img src="https://dash.takenupload.org/GIf-SMBT-NEW-340" alt="Sumbutogel" class="logo-gif">
+      <img src="logo.webp" alt="Sumbutogel" class="logo-gif">
       <span class="winner-link" onclick="openWinner()">🏆 LIHAT DAFTAR PEMENANG</span>
-      <img src="https://dash.takenupload.org/TOMBOL-TEBAK_SCORE-SUMBUTOGEL" alt="Tebak Score" class="tebak-gif">
 
       <div class="form-spacer-top"></div>
 
