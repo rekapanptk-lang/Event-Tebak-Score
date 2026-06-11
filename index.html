@@ -520,13 +520,6 @@
       showSection('loginSection'); return;
     }
 
-    // Cek OneSignal subscription
-    const notifAllowed = await checkAndRequestNotif();
-    if (!notifAllowed) {
-      document.getElementById('errMatch').textContent = '⚠️ Wajib allow notifikasi untuk submit tebakan!';
-      return;
-    }
-
     const userId = document.getElementById('userId').value.trim();
     const noHp   = document.getElementById('noHp').value.trim();
     const errUID = validateUserId(userId);
