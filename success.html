@@ -184,16 +184,21 @@
 
 <script>
   window.onload = function() {
-    const params    = new URLSearchParams(window.location.search);
-    const name      = params.get('name')      || 'Pengguna';
-    const timestamp = params.get('timestamp') || '-';
-    const matchesRaw = params.get('matches')  || '[]';
+    // Baca dari sessionStorage
+    let rekap = null;
+    try {
+      const raw = sessionStorage.getItem('pildun_rekap');
+      if (raw) {
+        rekap = JSON.parse(raw);
+        sessionStorage.removeItem('pildun_rekap'); // hapus setelah dibaca
+      }
+    } catch(e) {}
 
-    let matches = [];
-    try { matches = JSON.parse(decodeURIComponent(matchesRaw)); } catch(e) { matches = []; }
+    const name      = rekap?.name      || 'Pengguna';
+    const timestamp = rekap?.timestamp || '-';
+    const matches   = rekap?.matches   || [];
 
     const rekapBox = document.getElementById('rekapBox');
-
     let html = '<div class="rekap-title">📋 Rekap Tebakan Kamu</div>';
 
     if (matches.length) {
