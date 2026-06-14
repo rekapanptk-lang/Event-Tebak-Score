@@ -670,15 +670,7 @@
 
   let winnersCache = null;
 
-  function getYesterdayStr() {
-    const tglArr = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    return d.getDate() + ' ' + tglArr[d.getMonth()] + ' ' + d.getFullYear();
-  }
-
   async function openWinner() {
-    document.getElementById('winnerDateSub').textContent = getYesterdayStr();
     document.getElementById('winnerOverlay').classList.add('show');
     if (winnersCache !== null) { renderWinners(winnersCache); return; }
     try {
@@ -693,6 +685,13 @@
 
   function renderWinners(winners) {
     const list = document.getElementById('winnerList');
+    // Ambil tanggal dari winner terbaru di sheet (bukan hardcode -1 hari)
+    const dateSub = document.getElementById('winnerDateSub');
+    if (winners.length) {
+      dateSub.textContent = winners[0].tanggal || '';
+    } else {
+      dateSub.textContent = '';
+    }
     if (!winners.length) {
       list.innerHTML = '<div class="winner-empty">Belum ada pemenang<br><br>Jadilah Pemenang Pertama kami 🏆</div>'; return;
     }
