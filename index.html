@@ -156,6 +156,23 @@
       0%,100% { box-shadow: 0 0 10px rgba(255,220,0,0.4); }
       50%      { box-shadow: 0 0 20px rgba(255,220,0,0.6); }
     }
+
+    /* ── LOCKED STATE ── */
+    .match-card.locked {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+      background: #3a0000;
+      border-color: rgba(255,255,255,0.2);
+      animation: none;
+      transform: none;
+    }
+    .match-card.locked .match-title::after  { content: ' 🔒'; }
+    /* override done:not(.active) preview rule yang specificity-nya lebih tinggi */
+    .match-card.locked .match-preview       { display: none !important; }
+    .match-card.locked .match-cancel-hint   { display: none !important; }
+    .match-card.locked .match-checkbox      { display: none; }
+
     .match-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; user-select: none; }
     .match-checkbox {
       width: 18px; height: 18px; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.5);
@@ -364,10 +381,12 @@
   const CLIENT_ID       = '69593145654-5c2n90v8f3cetmtjl91u7ua00rg7rub2.apps.googleusercontent.com';
   const BASE_URL        = 'https://pialadunia-sumbutogel.vercel.app';
 
-  let matches     = [];
-  let currentUser = null;
-  let activeMatch = -1;
-  let isPlaying   = false;
+  let matches          = [];
+  let currentUser      = null;
+  let activeMatch      = -1;
+  let isPlaying        = false;
+  let lastRefetchTime  = 0;       // cooldown smart re-fetch
+  let lockCheckInterval = null;   // setInterval handle
 
   const music    = document.getElementById('bgMusic');
   const musicBtn = document.getElementById('musicBtn');
@@ -438,6 +457,9 @@
 
   function toggleMatch(i) {
     const card = document.getElementById('match-' + i);
+    // Guard: jangan proses kalau locked (seharusnya pointer-events:none sudah handle, tapi just in case)
+    if (!card || card.classList.contains('locked')) return;
+
     if (card.classList.contains('done') && !card.classList.contains('active')) {
       card.classList.remove('done'); card.classList.add('active');
       const sA = document.getElementById('scoreA-' + i);
@@ -473,6 +495,67 @@
     card.classList.add('done'); card.classList.remove('active'); activeMatch = -1;
   }
 
+  // ── LOCK CHECK — jalan tiap 10 detik, zero API call ──
+  function startLockCheck() {
+    if (lockCheckInterval) clearInterval(lockCheckInterval);
+    checkLockStates(); // immediate check saat pertama kali
+    lockCheckInterval = setInterval(checkLockStates, 10000);
+  }
+
+  function checkLockStates() {
+    if (!matches.length) return;
+
+    const now = Date.now();
+    let allExpired = true;
+
+    matches.forEach((m, i) => {
+      // Jika isoDatetime tidak ada, anggap normal (jangan lock/expire)
+      if (!m.isoDatetime) {
+        allExpired = false;
+        return;
+      }
+
+      const matchTime  = new Date(m.isoDatetime).getTime();
+      const lockTime   = matchTime - 30 * 60 * 1000; // -30 menit
+      const expireTime = matchTime + 60 * 1000;       // +1 menit
+
+      const card = document.getElementById('match-' + i);
+      if (!card) return;
+
+      if (now >= expireTime) {
+        // ── EXPIRED: sembunyikan ──
+        card.style.display = 'none';
+        if (activeMatch === i) activeMatch = -1;
+        // allExpired tetap true
+      } else if (now >= lockTime) {
+        // ── LOCKED: greyout, tidak bisa diklik ──
+        card.style.display = '';
+        card.classList.add('locked');
+        card.classList.remove('active'); // tutup input kalau lagi terbuka
+        if (activeMatch === i) activeMatch = -1;
+        allExpired = false;
+      } else {
+        // ── NORMAL ──
+        card.style.display = '';
+        card.classList.remove('locked');
+        allExpired = false;
+      }
+    });
+
+    // Semua sudah expire → coba fetch jadwal baru
+    if (allExpired) smartRefetch();
+  }
+
+  // Smart re-fetch: hanya call API kalau semua match expired, dengan cooldown 2 menit
+  async function smartRefetch() {
+    const COOLDOWN = 2 * 60 * 1000;
+    if (Date.now() - lastRefetchTime < COOLDOWN) return;
+    lastRefetchTime = Date.now();
+    await loadConfig();
+    renderMatches();
+    startLockCheck(); // restart interval dengan data baru
+  }
+
   function validateUserId(val) {
     if (!val || val.length < 4) return 'User ID minimal 4 karakter bray';
     if (!/^[a-zA-Z0-9]+$/.test(val)) return 'User ID cuma boleh huruf & angka';
@@ -496,14 +579,6 @@
     } catch(e) {}
   }
 
-  // ── ONESIGNAL ──
-  async function getOS() {
-    return new Promise((resolve, reject) => {
-      const t = setTimeout(() => reject(new Error('timeout')), 5000);
-      OneSignalDeferred.push(os => { clearTimeout(t); resolve(os); });
-    });
-  }
-
   // ── SUBMIT ──
   async function handleSubmit() {
     if (!currentUser || !currentUser.email) {
@@ -521,7 +596,9 @@
 
     const selected = matches.map((m, i) => {
       const card = document.getElementById('match-' + i);
+      // Skip match yang tidak done, atau yang sudah expired (hidden)
       if (!card || !card.classList.contains('done')) return null;
+      if (card.style.display === 'none') return null; // expired, skip
       let sA = document.getElementById('scoreA-' + i)?.value || '0';
       let sB = document.getElementById('scoreB-' + i)?.value || '0';
       if (sA === '') sA = '0'; if (sB === '') sB = '0';
@@ -577,6 +654,7 @@
     localStorage.setItem('pildun_user', JSON.stringify(currentUser));
     showSection('formSection');
     renderMatches();
+    startLockCheck(); // mulai cek lock state setelah render
     autoFillForm();
     setTimeout(() => openWinner(), 500);
   }
