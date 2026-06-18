@@ -700,7 +700,7 @@
       <div class="winner-item">
         <div class="winner-rank">${medals[i] || '🏅'}</div>
         <div class="winner-info">
-          <div class="winner-userid">${w.userId}</div>
+          <div class="winner-userid">${w.userId.substring(0, 3)}***</div>
           <div class="winner-match">${w.pertandingan}</div>
           <div class="winner-date">${w.tanggal}</div>
         </div>
